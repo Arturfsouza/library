@@ -8,26 +8,30 @@ class Book:
         self.title = title
         self.price_code = price_code
 
+    def get_charge(self, days_rented: int) -> float:
+        amount = 0
+        # determine amounts for each line
+        if self.price_code == Book.REGULAR:
+            amount += 2
+            if days_rented > 2:
+                amount += (days_rented - 2) * 1.5
+        elif self.price_code == Book.NEW_RELEASE:
+            amount += days_rented * 3
+        elif self.price_code == Book.CHILDREN:
+            amount += 1.5
+            if days_rented > 3:
+                amount += (days_rented - 3) * 1.5
+        return amount
+
 
 class Rental:
     def __init__(self, book: Book, days_rented: int):
         self.book = book
         self.days_rented = days_rented
+
     def get_charge(self) -> float:
-        amount = 0
-        # determine amounts for each line
-        if self.book.price_code == Book.REGULAR:
-            amount += 2
-            if self.days_rented > 2:
-                amount += (self.days_rented - 2) * 1.5
-        elif self.book.price_code == Book.NEW_RELEASE:
-            amount += self.days_rented * 3
-        elif self.book.price_code == Book.CHILDREN:
-            amount += 1.5
-            if self.days_rented > 3:
-                amount += (self.days_rented - 3) * 1.5
-        return amount
-    
+        return self.book.get_charge(self.days_rented)
+
     def get_frequent_renter_points(self):
         points = 1
         if self.book.price_code == Book.NEW_RELEASE and self.days_rented > 1:
@@ -44,7 +48,6 @@ class Client:
     def add_rental(self, rental: Rental):
         self.rentals.append(rental)
 
-
     def statement(self) -> str:
 
         total_amount = 0
@@ -52,10 +55,10 @@ class Client:
         result = f"Rental summary for {self.name}\n"
         
         for rental in self.rentals:
-            # determine amounts for each line (extraído para get_charge)
+            # determine amounts for each line (agora via delegação)
             amount = rental.get_charge()
 
-            # add frequent renter points (corrigido para acumular)
+            # add frequent renter points
             frequent_renter_points += rental.get_frequent_renter_points()
 
             # show each rental result
